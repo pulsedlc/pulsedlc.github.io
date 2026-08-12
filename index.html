@@ -153,10 +153,11 @@
 
                 <div class="f" style="margin-top:11px">
                   <div class="fi">
-                    <input type="text" id="r-tg" placeholder="x" autocomplete="off" />
-                    <label>Telegram username</label>
-                    <i class="ti ti-brand-telegram ic"></i>
+                    <input type="text" id="r-invite" placeholder="x" maxlength="13" oninput="fmt(this)" autocomplete="one-time-code" />
+                    <label>Инвайт-код</label>
+                    <i class="ti ti-key ic"></i>
                   </div>
+                  <a class="inv-get" href="https://t.me/pulsedlc_bot" target="_blank" rel="noopener">Получить код в Telegram <i class="ti ti-external-link"></i></a>
                 </div>
 
                 <div class="agree" onclick="tglchk()">

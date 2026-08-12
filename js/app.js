@@ -745,13 +745,8 @@ function pws(inp, bid) {
 }
 
 function fmt(el) {
-  let v = el.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 12);
-  v = v.replace(/(.{4})(?=.)/g, "$1-");
-  el.value = v;
-  const ok = document.getElementById("iok");
-  const clean = v.replace(/-/g, "");
-  if (clean.length >= 4) { ok.classList.add("show"); ok.style.opacity = 1; }
-  else { ok.classList.remove("show"); ok.style.opacity = 0; }
+  const clean = el.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().replace(/^PLS/, "").slice(0, 8);
+  el.value = "PLS-" + clean.slice(0, 4) + (clean.length > 4 ? "-" + clean.slice(4) : "");
 }
 
 function tglchk() {
@@ -804,15 +799,15 @@ async function dologin(btn) {
 async function doreg(btn) {
   const lg = document.getElementById("r-lg").value.trim();
   const pw = document.getElementById("r-pw").value;
-  const telegram = document.getElementById("r-tg").value.trim();
+  const invite = document.getElementById("r-invite").value.trim().toUpperCase();
   const btxt = btn.querySelector(".btxt");
-  if (!lg || !pw) { st("s-reg", "Заполни логин и пароль", "err"); return; }
+  if (!lg || !pw || !invite) { st("s-reg", "Заполни логин, пароль и инвайт-код", "err"); return; }
   if (!authAgreed) { st("s-reg", "Нужно принять условия", "err"); return; }
   btn.classList.add("ld");
   btxt.textContent = "Создаём аккаунт...";
   document.querySelectorAll("#sdots .step-dot").forEach((d, i) => { d.className = "step-dot on"; d.style.animationDelay = i * 0.15 + "s"; });
   try {
-    const d = await api("/v1/account/register", { method: "POST", body: { login: lg, password: pw, telegram } });
+    const d = await api("/v1/account/register", { method: "POST", body: { login: lg, password: pw, invite } });
     state.token = d.token;
     sessionStorage.setItem(TOKEN_KEY, state.token);
     await refreshMe();

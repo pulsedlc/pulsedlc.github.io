@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PULSE DLC — Rust</title>
+    <meta name="description" content="PULSE DLC для Rust — функции, тарифы, скриншоты и покупка ключа." />
+    <meta name="theme-color" content="#090909" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <canvas id="rain" aria-hidden="true"></canvas>
+    <div class="flash" aria-hidden="true" id="flash"></div>
+    <div id="app" class="shell">
+
+      <div class="nav-outer">
+        <header class="nav">
+          <a class="brand" href="#/">PULSE DLC <span class="ver">266</span></a>
+          <nav class="links">
+            <a href="#/" data-nav="home">Главная</a>
+            <a href="#/products" data-nav="products">Продукты</a>
+            <a href="https://discord.gg/2rMMgRwy5" target="_blank" rel="noopener">Поддержка</a>
+          </nav>
+        </header>
+      </div>
+
+      <main>
+
+        <!-- ================= ГЛАВНАЯ ================= -->
+        <section id="page-home" class="page">
+          <div class="hero">
+            <div class="hero-bg" aria-hidden="true"></div>
+            <div class="hero-grain" aria-hidden="true"></div>
+            <div class="hero-copy">
+              <p class="eyebrow">Rust · CS2</p>
+              <h1 class="logo-hero">PULSE&nbsp;DLC</h1>
+              <div class="cta">
+                <a href="#/products" class="btn solid">Купить ключ</a>
+                <a href="#features" class="btn ghost">Функции</a>
+              </div>
+            </div>
+          </div>
+
+          <section class="strip" aria-label="Screenshots">
+            <div class="strip-img a"></div>
+            <div class="strip-img b"></div>
+            <div class="strip-img c"></div>
+            <div class="strip-img d"></div>
+          </section>
+
+          <section class="block" id="features">
+            <h2 class="reveal">Функции</h2>
+            <div class="sub">Полный набор для игры: от аимбота до ESP по миру.</div>
+            <div class="feat-list" id="feat-list"></div>
+          </section>
+
+          <section class="block menu-section" id="menu-preview">
+            <h2 class="reveal">Меню</h2>
+            <div class="slideshow" id="slideshow"></div>
+          </section>
+
+          <section class="block end-cta">
+            <div class="end-visual" aria-hidden="true"></div>
+            <h2 class="reveal">Ключи</h2>
+            <p class="sub">1 день 19 ₽ · 7 дней 99 ₽ · 30 дней 239 ₽ · навсегда 666 ₽</p>
+            <a href="#/products" class="btn solid">К тарифам</a>
+          </section>
+        </section>
+
+        <!-- ================= ПРОДУКТЫ ================= -->
+        <section id="page-products" class="page hidden">
+          <div class="block products">
+            <h2>Продукты</h2>
+            <div class="sub" id="products-sub">Лицензия для PULSE DLC. После оплаты ключ выдаётся через выбранную площадку.</div>
+            <div class="game-tabs" id="game-tabs">
+              <button type="button" class="game-tab" data-game="rust">RUST</button>
+              <button type="button" class="game-tab" data-game="cs2">CS2</button>
+              <button type="button" class="game-tab" data-game="spoofer">SPOOFER</button>
+            </div>
+            <div class="price-row" id="price-row"></div>
+            <p class="hint-line" id="products-hint"></p>
+          </div>
+        </section>
+
+        <!-- ================= АВТОРИЗАЦИЯ ================= -->
+        <section id="page-auth" class="page hidden">
+          <div class="auth-shell">
+            <div class="orb orb1"></div><div class="orb orb2"></div>
+            <div class="card auth-card">
+              <div class="scan"></div>
+              <div class="shine"></div>
+
+              <div class="logo-area">
+                <div class="logo-wrap"><span class="logo-letter">P</span></div>
+                <div class="logo-title">PULSE DLC</div>
+                <div class="logo-sub">DIGITAL CONTENT HUB</div>
+              </div>
+
+              <div class="tabs">
+                <div class="t-ink" id="ink"></div>
+                <button type="button" class="tab-btn on" id="tb-in" onclick="go('in')">Войти</button>
+                <button type="button" class="tab-btn" id="tb-reg" onclick="go('reg')">Регистрация</button>
+              </div>
+
+              <div class="panel on" id="p-in">
+                <div class="f">
+                  <div class="fi">
+                    <input type="text" id="i-lg" placeholder="x" autocomplete="username" />
+                    <label>Логин</label>
+                    <i class="ti ti-user ic"></i>
+                  </div>
+                </div>
+                <div class="f">
+                  <div class="fi">
+                    <input type="password" id="i-pw" placeholder="x" oninput="pws(this,'ib')" autocomplete="current-password" />
+                    <label>Пароль</label>
+                    <i class="ti ti-lock ic"></i>
+                    <button type="button" class="eye-btn" onclick="ey('i-pw',this)"><i class="ti ti-eye"></i></button>
+                  </div>
+                  <div class="pw-track"><div class="pw-fill" id="ib"></div></div>
+                </div>
+
+                <div class="div-row"><div class="div-l"></div><span class="div-t">или</span><div class="div-r"></div></div>
+
+                <button type="button" class="btn-black" onclick="tgc()">
+                  <i class="ti ti-brand-telegram tg-ico"></i>
+                  <span class="tg-label">Войти через Telegram</span>
+                </button>
+
+                <button type="button" class="btn-main" onclick="dologin(this)"><span class="btxt">Войти в аккаунт</span></button>
+                <div class="st" id="s-in"></div>
+              </div>
+
+              <div class="panel" id="p-reg">
+                <div class="row2">
+                  <div class="f" style="margin-bottom:0">
+                    <div class="fi">
+                      <input type="text" id="r-lg" placeholder="x" autocomplete="username" />
+                      <label>Логин</label>
+                      <i class="ti ti-user ic"></i>
+                    </div>
+                  </div>
+                  <div class="f" style="margin-bottom:0">
+                    <div class="fi">
+                      <input type="password" id="r-pw" placeholder="x" oninput="pws(this,'rb')" autocomplete="new-password" />
+                      <label>Пароль</label>
+                      <i class="ti ti-lock ic"></i>
+                      <button type="button" class="eye-btn" onclick="ey('r-pw',this)"><i class="ti ti-eye"></i></button>
+                    </div>
+                    <div class="pw-track"><div class="pw-fill" id="rb"></div></div>
+                  </div>
+                </div>
+
+                <div class="f" style="margin-top:11px">
+                  <div class="fi">
+                    <input type="text" id="r-tg" placeholder="x" autocomplete="off" />
+                    <label>Telegram username</label>
+                    <i class="ti ti-brand-telegram ic"></i>
+                  </div>
+                </div>
+
+                <div class="f">
+                  <div class="fi">
+                    <input type="text" id="r-inv" placeholder="x" maxlength="14" oninput="fmt(this)" autocomplete="off" />
+                    <label>Инвайт-код</label>
+                    <i class="ti ti-key ic"></i>
+                    <div class="inv-ok" id="iok"><i class="ti ti-check"></i></div>
+                  </div>
+                  <a class="inv-get" href="https://discord.gg/2rMMgRwy5" target="_blank" rel="noopener">Получить код <i class="ti ti-external-link"></i></a>
+                </div>
+
+                <div class="agree" onclick="tglchk()">
+                  <div class="chk" id="chk"></div>
+                  <div class="agree-txt">Принимаю <a href="#/" onclick="return false">условия использования</a></div>
+                </div>
+
+                <button type="button" class="btn-main" id="b-reg" onclick="doreg(this)" style="margin-top:4px"><span class="btxt">Создать аккаунт</span></button>
+                <div class="st" id="s-reg"></div>
+                <div class="steps" id="sdots">
+                  <div class="step-dot on"></div>
+                  <div class="step-dot on"></div>
+                  <div class="step-dot on"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= КАБИНЕТ ================= -->
+        <section id="page-cabinet" class="page hidden">
+          <div class="block cabinet">
+            <div class="cab-panel" id="cab-panel">
+              <div class="cab-avatar" id="cab-avatar">?</div>
+              <div class="cab-head">
+                <p class="eyebrow">Личный кабинет</p>
+                <h2 class="cab-login" id="cab-user"></h2>
+                <p class="sub" id="cab-tg"></p>
+              </div>
+              <div class="cab-actions">
+                <a class="btn solid" href="#/" id="cab-loader">Скачать лоудер</a>
+                <a class="btn ghost" href="#/products">Купить</a>
+              </div>
+            </div>
+
+            <div class="cab-stats">
+              <div class="stat">
+                <span class="stat-label">Ключи</span>
+                <span class="stat-val" id="cab-count">0</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Активные</span>
+                <span class="stat-val" id="cab-alive">0</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Версия</span>
+                <span class="stat-val">v266</span>
+              </div>
+            </div>
+
+            <form class="form redeem" id="redeem-form">
+              <label>Активировать ключ
+                <input id="redeem-code" placeholder="XXXX-XXXX-XXXX-XXXX" required />
+              </label>
+              <button type="submit" class="btn solid">Активировать</button>
+            </form>
+
+            <div class="cab-keys">
+              <h3 class="keys-title">Ключи</h3>
+              <p class="err hidden" id="cab-err"></p>
+              <p class="ok hidden" id="cab-ok"></p>
+              <p class="empty hidden" id="cab-empty">Ключей нет</p>
+              <ul class="key-list" id="key-list"></ul>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <footer class="foot">
+        <span>PULSE DLC</span>
+        <span>266</span>
+      </footer>
+    </div>
+
+    <!-- ================= МОДАЛКА ПОКУПКИ ================= -->
+    <div class="modal hidden" id="buy-modal">
+      <div class="modal-card">
+        <button type="button" class="modal-x" id="modal-close" aria-label="Закрыть">&times;</button>
+        <p class="eyebrow" id="modal-eyebrow">Подписка на аккаунт</p>
+        <h3 class="modal-title" id="modal-title">PULSE DLC</h3>
+        <p class="modal-sub" id="modal-sub"></p>
+        <div class="modal-price" id="modal-price"></div>
+        <p class="modal-label">Способ оплаты</p>
+        <div class="pay-methods">
+          <button type="button" class="pay-card" id="pay-tg">
+            <span class="pay-logo">✈</span>
+            <span class="pay-info"><b>Telegram</b><span>Оплата через бота</span></span>
+            <span class="pay-arrow">&rarr;</span>
+          </button>
+          <button type="button" class="pay-card" id="pay-fonpay">
+            <span class="pay-logo">&empty;</span>
+            <span class="pay-info"><b>FunPay</b><span>Карта / СБП</span></span>
+            <span class="pay-arrow">&rarr;</span>
+          </button>
+        </div>
+        <p class="modal-stub" id="modal-stub"></p>
+      </div>
+    </div>
+
+    <div class="toast hidden" id="toast"></div>
+
+    <!-- ================= МОДАЛКА СБРОСА HWID ================= -->
+    <div class="modal hidden" id="hwid-modal">
+      <div class="modal-card hwid-card">
+        <button type="button" class="modal-x" id="hwid-close" aria-label="Закрыть">&times;</button>
+        <p class="eyebrow">Сброс HWID</p>
+        <h3 class="modal-title">Привязка к устройству</h3>
+        <p class="modal-sub hwid-text">Для сброса HWID напишите в тикет на нашем Discord-сервере и приложите <b>ключ</b>, для которого нужно сбросить привязку.</p>
+        <a class="btn solid hwid-btn" href="https://discord.gg/2rMMgRwy5" target="_blank" rel="noopener">Открыть Discord</a>
+      </div>
+    </div>
+
+    <script src="js/app.js"></script>
+  </body>
+</html>

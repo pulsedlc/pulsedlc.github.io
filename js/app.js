@@ -1,12 +1,17 @@
 "use strict";
 
-/* PULSE DLC — публичный сайт для GitHub Pages. */
+/* PULSE DLC — сайт и личный кабинет на Cloudflare D1. */
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
+const API_BASE = /^(localhost|127\.0\.0\.1)$/.test(location.hostname)
+  ? "http://127.0.0.1:8788"
+  : "https://pluse-dlc-license-api.djjddjjxnxnd.workers.dev";
+const TOKEN_KEY = "pulsedlc_session";
 
 const state = {
   user: null,
+  token: sessionStorage.getItem(TOKEN_KEY),
   features: {},
   keys: [],
   version: "266",
@@ -133,29 +138,23 @@ const state = {
 /* ================= API ================= */
 
 async function api(path, opts = {}) {
-  const init = { method: opts.method || "GET" };
+  const headers = {};
+  if (state.token) headers.Authorization = "Bearer " + state.token;
+  const init = { method: opts.method || "GET", headers };
   if (opts.body) {
-    init.headers = { "Content-Type": "application/json" };
+    headers["Content-Type"] = "application/json";
     init.body = JSON.stringify(opts.body);
   }
-  const res = await fetch(path, init);
+  const res = await fetch(API_BASE + path, init);
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || "HTTP " + res.status);
+  if (!res.ok) throw new Error(data.message || "HTTP " + res.status);
   return data;
 }
 
 async function refreshMe() {
-  const d = await api("/api/me");
+  const d = await api("/v1/account/me");
   state.user = d.user;
-  state.features = d.features;
-  state.keys = d.keys;
-  state.plans = d.plans;
-}
-
-async function loadPlans() {
-  const d = await api("/api/meta");
-  state.plans = d.products;
-  state.version = d.version;
+  state.keys = d.licenses || [];
 }
 
 /* ================= ТОСТ ================= */
@@ -171,13 +170,14 @@ function toast(msg, kind) {
 
 /* ================= РОУТИНГ ================= */
 
-const ROUTES = ["home", "products"];
+const ROUTES = ["home", "products", "auth", "cabinet"];
 
 function route() {
   const h = (location.hash || "").replace(/^#/, "");
   let name = h.replace(/^\//, "").split("?")[0] || "home";
   if (name.startsWith("features") || name === "menu-preview") name = "home";
   if (!ROUTES.includes(name)) name = "home";
+  if (name === "cabinet" && !state.user) name = "auth";
 
   ROUTES.forEach((r) => {
     $("#page-" + r).classList.toggle("hidden", r !== name);
@@ -186,6 +186,11 @@ function route() {
   });
   if (name === "home") renderHome();
   if (name === "products") renderProducts();
+  if (name === "auth") renderAuth();
+  if (name === "cabinet") renderCabinet();
+  $("#nav-cabinet").classList.toggle("hidden", !state.user);
+  $("#nav-login").classList.toggle("hidden", !!state.user);
+  $("#nav-logout").classList.toggle("hidden", !state.user);
 
   if (name === "home" && h.startsWith("features")) {
     setTimeout(() => document.getElementById("features")?.scrollIntoView(), 50);
@@ -771,7 +776,6 @@ function st(id, msg, cls) {
 }
 
 async function dologin(btn) {
-  rip(btn, event);
   const lg = document.getElementById("i-lg").value.trim();
   const pw = document.getElementById("i-pw").value;
   const btxt = btn.querySelector(".btxt");
@@ -779,7 +783,9 @@ async function dologin(btn) {
   btn.classList.add("ld");
   btxt.textContent = "Проверяем...";
   try {
-    await api("/api/login", { method: "POST", body: { login: lg, password: pw } });
+    const d = await api("/v1/account/login", { method: "POST", body: { login: lg, password: pw } });
+    state.token = d.token;
+    sessionStorage.setItem(TOKEN_KEY, state.token);
     await refreshMe();
     document.getElementById("i-lg").value = "";
     document.getElementById("i-pw").value = "";
@@ -787,7 +793,7 @@ async function dologin(btn) {
     btxt.textContent = "Войти в аккаунт";
     st("s-in", "Добро пожаловать, " + state.user.login + " ✓", "ok");
     toast("Добро пожаловать, <b>" + state.user.login + "</b>");
-    location.hash = "#/";
+    location.hash = "#/cabinet";
   } catch (e) {
     btn.classList.remove("ld");
     btxt.textContent = "Войти в аккаунт";
@@ -796,40 +802,31 @@ async function dologin(btn) {
 }
 
 async function doreg(btn) {
-  rip(btn, event);
   const lg = document.getElementById("r-lg").value.trim();
   const pw = document.getElementById("r-pw").value;
-  const tg = document.getElementById("r-tg").value.trim();
-  const inv = document.getElementById("r-inv").value.trim();
+  const telegram = document.getElementById("r-tg").value.trim();
   const btxt = btn.querySelector(".btxt");
-  if (!lg || !pw || !tg || !inv) { st("s-reg", "Заполни все поля", "err"); return; }
+  if (!lg || !pw) { st("s-reg", "Заполни логин и пароль", "err"); return; }
   if (!authAgreed) { st("s-reg", "Нужно принять условия", "err"); return; }
   btn.classList.add("ld");
   btxt.textContent = "Создаём аккаунт...";
   document.querySelectorAll("#sdots .step-dot").forEach((d, i) => { d.className = "step-dot on"; d.style.animationDelay = i * 0.15 + "s"; });
   try {
-    await api("/api/register", { method: "POST", body: { login: lg, password: pw, tg, invite: inv } });
+    const d = await api("/v1/account/register", { method: "POST", body: { login: lg, password: pw, telegram } });
+    state.token = d.token;
+    sessionStorage.setItem(TOKEN_KEY, state.token);
     await refreshMe();
     btn.classList.remove("ld");
     btxt.textContent = "Создать аккаунт";
     document.querySelectorAll("#sdots .step-dot").forEach((d) => d.className = "step-dot");
     st("s-reg", "Аккаунт создан ✓", "ok");
     toast("Добро пожаловать, <b>" + state.user.login + "</b>");
-    location.hash = "#/";
+    location.hash = "#/cabinet";
   } catch (e) {
     btn.classList.remove("ld");
     btxt.textContent = "Создать аккаунт";
     document.querySelectorAll("#sdots .step-dot").forEach((d) => d.className = "step-dot");
     st("s-reg", e.message, "err");
-  }
-}
-
-async function tgc() {
-  try {
-    const d = await api("/api/tg-login", { method: "POST" });
-    st("s-in", "Заглушка: OAuth через " + d.url.replace("https://t.me/", "@"), "ok");
-  } catch (e) {
-    st("s-in", e.message, "err");
   }
 }
 
@@ -843,19 +840,19 @@ function fmtDate(ts) {
 function renderCabinet() {
   const login = state.user.login;
   $("#cab-user").textContent = login;
-  $("#cab-avatar").innerHTML = '<img src="/img/avatar.gif" alt="avatar" class="cab-avatar-img">';
-  const tg = state.user.tg;
+  $("#cab-avatar").innerHTML = '<img src="img/avatar.gif" alt="avatar" class="cab-avatar-img">';
+  const tg = state.user.telegram;
   $("#cab-tg").textContent = tg ? "Telegram: @" + tg : "Telegram не привязан";
 
   const keys = state.keys || [];
   $("#cab-empty").classList.toggle("hidden", keys.length !== 0);
   $("#cab-count").textContent = keys.length;
-  $("#cab-alive").textContent = keys.filter((k) => k.days === 0 || k.expires_at > Date.now()).length;
+  $("#cab-alive").textContent = keys.filter((k) => k.enabled && (!k.expires_at || Date.parse(k.expires_at) > Date.now())).length;
 
   const list = $("#key-list");
   list.innerHTML = "";
   keys.slice().reverse().forEach((k) => {
-    const alive = k.days === 0 || k.expires_at > Date.now();
+    const alive = k.enabled && (!k.expires_at || Date.parse(k.expires_at) > Date.now());
     const li = document.createElement("li");
     li.className = "key" + (alive ? " active" : " dead");
 
@@ -906,24 +903,26 @@ function renderCabinet() {
     hwid.className = "key-eye";
     hwid.setAttribute("aria-label", "Сбросить HWID");
     hwid.innerHTML = '<i class="ti ti-refresh"></i>';
-    hwid.onclick = () => openHwidModal();
+    hwid.disabled = !k.hwid_bound;
+    hwid.title = k.hwid_bound ? "Сбросить HWID" : "HWID ещё не привязан";
+    hwid.onclick = () => openHwidModal(realCode);
 
     const info = document.createElement("span");
     let leftText = "";
-    if (k.days === 0) {
+    if (!k.expires_at) {
       leftText = "∞";
     } else if (alive) {
-      const hoursLeft = Math.max(0, Math.ceil((k.expires_at - Date.now()) / 3600000));
-      leftText = hoursLeft > 720 ? "∞" : hoursLeft + "ч до конца подписки";
+      const hoursLeft = Math.max(0, Math.ceil((Date.parse(k.expires_at) - Date.now()) / 3600000));
+      leftText = hoursLeft + "ч до конца подписки";
     }
     info.textContent = leftText;
 
     const badge = document.createElement("span");
     badge.className = "badge" + (alive ? " active" : "");
-    const hoursLeft = alive && k.days !== 0
-      ? Math.ceil((k.expires_at - Date.now()) / 3600000)
+    const hoursLeft = alive && k.expires_at
+      ? Math.ceil((Date.parse(k.expires_at) - Date.now()) / 3600000)
       : 0;
-    badge.textContent = k.days === 0 || (alive && hoursLeft > 720)
+    badge.textContent = !k.expires_at
       ? "LIFETIME"
       : alive ? "активна" : "истёк";
 
@@ -950,13 +949,13 @@ async function redeemKey(e) {
   ok.classList.add("hidden");
   const input = $("#redeem-code");
   try {
-    const d = await api("/api/keys/redeem", { method: "POST", body: { code: input.value } });
-    ok.textContent = "Ключ добавлен: " + d.key.code;
+    const key = input.value.trim().toUpperCase();
+    const d = await api("/v1/account/licenses/claim", { method: "POST", body: { key } });
+    state.keys = d.licenses || [];
+    ok.textContent = "Ключ добавлен: " + key;
     ok.classList.remove("hidden");
     input.value = "";
-    await refreshMe();
     renderCabinet();
-    renderMenu();
   } catch (e2) {
     err.textContent = e2.message;
     err.classList.remove("hidden");
@@ -984,12 +983,32 @@ function closeBuyModal() {
   modalPlan = null;
 }
 
-function openHwidModal() {
+let hwidKey = null;
+function openHwidModal(key) {
+  hwidKey = key;
   $("#hwid-modal").classList.remove("hidden");
 }
 
 function closeHwidModal() {
+  hwidKey = null;
   $("#hwid-modal").classList.add("hidden");
+}
+
+async function confirmHwidReset() {
+  if (!hwidKey) return;
+  const button = $("#hwid-confirm");
+  button.disabled = true;
+  try {
+    const d = await api("/v1/account/licenses/reset-hwid", { method: "POST", body: { key: hwidKey } });
+    state.keys = d.licenses || [];
+    closeHwidModal();
+    renderCabinet();
+    toast("HWID успешно сброшен", "good");
+  } catch (error) {
+    toast(error.message, "bad");
+  } finally {
+    button.disabled = false;
+  }
 }
 
 const FUNPAY_LINKS = {
@@ -1023,11 +1042,28 @@ async function init() {
     b.addEventListener("click", () => switchGame(b.dataset.game));
   });
 
+  $("#nav-logout").addEventListener("click", async () => {
+    try { await api("/v1/account/logout", { method: "POST" }); } catch (error) {}
+    state.token = null;
+    state.user = null;
+    state.keys = [];
+    sessionStorage.removeItem(TOKEN_KEY);
+    location.hash = "#/";
+    route();
+  });
+
+  $("#redeem-form").addEventListener("submit", redeemKey);
+  $("#cab-loader").addEventListener("click", (e) => {
+    e.preventDefault();
+    toast("Ссылка на лоудер появится после загрузки релиза");
+  });
+
   $("#modal-close").addEventListener("click", closeBuyModal);
   $("#buy-modal").addEventListener("click", (e) => {
     if (e.target === $("#buy-modal")) closeBuyModal();
   });
   $("#hwid-close").addEventListener("click", closeHwidModal);
+  $("#hwid-confirm").addEventListener("click", confirmHwidReset);
   $("#hwid-modal").addEventListener("click", (e) => {
     if (e.target === $("#hwid-modal")) closeHwidModal();
   });
@@ -1045,6 +1081,14 @@ async function init() {
     }
   });
 
+  if (state.token) {
+    try {
+      await refreshMe();
+    } catch (error) {
+      state.token = null;
+      sessionStorage.removeItem(TOKEN_KEY);
+    }
+  }
   renderProducts();
   route();
 }

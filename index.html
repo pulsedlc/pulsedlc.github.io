@@ -23,6 +23,9 @@
           <nav class="links">
             <a href="#/" data-nav="home">Главная</a>
             <a href="#/products" data-nav="products">Продукты</a>
+            <a href="#/cabinet" data-nav="cabinet" id="nav-cabinet">Кабинет</a>
+            <a href="#/auth" data-nav="auth" id="nav-login">Вход</a>
+            <button type="button" class="linkish hidden" id="nav-logout">Выйти</button>
             <a href="https://discord.gg/2rMMgRwy5" target="_blank" rel="noopener">Поддержка</a>
           </nav>
         </header>
@@ -124,13 +127,6 @@
                   <div class="pw-track"><div class="pw-fill" id="ib"></div></div>
                 </div>
 
-                <div class="div-row"><div class="div-l"></div><span class="div-t">или</span><div class="div-r"></div></div>
-
-                <button type="button" class="btn-black" onclick="tgc()">
-                  <i class="ti ti-brand-telegram tg-ico"></i>
-                  <span class="tg-label">Войти через Telegram</span>
-                </button>
-
                 <button type="button" class="btn-main" onclick="dologin(this)"><span class="btxt">Войти в аккаунт</span></button>
                 <div class="st" id="s-in"></div>
               </div>
@@ -161,16 +157,6 @@
                     <label>Telegram username</label>
                     <i class="ti ti-brand-telegram ic"></i>
                   </div>
-                </div>
-
-                <div class="f">
-                  <div class="fi">
-                    <input type="text" id="r-inv" placeholder="x" maxlength="14" oninput="fmt(this)" autocomplete="off" />
-                    <label>Инвайт-код</label>
-                    <i class="ti ti-key ic"></i>
-                    <div class="inv-ok" id="iok"><i class="ti ti-check"></i></div>
-                  </div>
-                  <a class="inv-get" href="https://discord.gg/2rMMgRwy5" target="_blank" rel="noopener">Получить код <i class="ti ti-external-link"></i></a>
                 </div>
 
                 <div class="agree" onclick="tglchk()">
@@ -279,8 +265,8 @@
         <button type="button" class="modal-x" id="hwid-close" aria-label="Закрыть">&times;</button>
         <p class="eyebrow">Сброс HWID</p>
         <h3 class="modal-title">Привязка к устройству</h3>
-        <p class="modal-sub hwid-text">Для сброса HWID напишите в тикет на нашем Discord-сервере и приложите <b>ключ</b>, для которого нужно сбросить привязку.</p>
-        <a class="btn solid hwid-btn" href="https://discord.gg/2rMMgRwy5" target="_blank" rel="noopener">Открыть Discord</a>
+        <p class="modal-sub hwid-text">Сбросить привязку выбранного ключа к компьютеру? Следующий запуск лоудера привяжет ключ к новому HWID.</p>
+        <button type="button" class="btn solid hwid-btn" id="hwid-confirm">Сбросить HWID</button>
       </div>
     </div>
 
